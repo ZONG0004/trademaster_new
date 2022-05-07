@@ -1,0 +1,5 @@
+現在主要問題：對於第一次trading 他的手續費用之來自於購買
+考慮把價格變化后的portion與直接的weights進行整合，
+手續費用來自與動作與上一個portion的差距
+為方便起見， 我們考慮直接用assets各自的錢來計算assets的轉移所需要的費用
+現在還是有一個小問題 就是關於commission fee的問題 因爲一次trading可能就漲千分之1 這樣
