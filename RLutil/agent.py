@@ -1,6 +1,8 @@
+from lib2to3.pgen2.pgen import DFAState
 from logging import raiseExceptions
 from xml.parsers.expat import model
 from attr import define
+from cv2 import dft
 import ray
 from ray.rllib.agents.a3c import a2c
 from ray.rllib.agents.ddpg import ddpg
@@ -12,7 +14,7 @@ from env import TradingEnv
 from pathlib import Path
 import sys
 sys.path.append('..')
-
+import pandas as pd
 
 class agent:
     """agent is class that contains API for the TradeMaster to train, valid and test the agents from the RLlib in the 
@@ -109,7 +111,15 @@ class agent:
             action = self.trainer.compute_single_action(state)
             state, reward, done, sharpe = test_env_instance.step(action)
         rewards = test_env_instance.save_asset_memory()
+        assets = rewards["total assets"].values
+        df_return = test_env_instance.save_portfolio_return_memory()
+        daily_return = df_return.daily_return.values
+        df = pd.DataFrame()
+        df["daily_return"] = daily_return
+        df["total assets"] = assets
+
+
         self.result_path=self.result_path+"/"+str(self.seed)
-        rewards.to_csv(self.result_path+".csv")
-        return rewards
+        df.to_csv(self.result_path+".csv")
+        return df
     

@@ -10,8 +10,8 @@ from logging import raiseExceptions
 import numpy
 import os
 import pandas as pd
-
-class TradeMaster(Dataconfig,agent):
+from analysis.risk_return import *
+class TradeMaster(Dataconfig,agent,Analysis):
     def __init__(self, path, data,algorithms,seed,train_env,test_env):
         self.algorithms=algorithms
         Dataconfig.__init__(self,path, data)
@@ -20,6 +20,8 @@ class TradeMaster(Dataconfig,agent):
         result_path=self.results_dict
         print(result_path)
         agent.__init__(self,algorithms,train,seed,trained_model_path,result_path,valid,test,train_env,test_env)
+        Analysis.__init__(self,path=self.result_path)
+
         
 
     def get_environment(self):
@@ -43,8 +45,9 @@ class TradeMaster(Dataconfig,agent):
     
 
 if __name__=="__main__":
-    path = "/home/sunshuo/qml/trademaster_new"
-    a = TradeMaster(path="/home/sunshuo/qml/trademaster_new",
-     data="dj30",algorithms="sac",seed=12345,train_env=TradingEnv,test_env=TestingEnv)
-    a.train_with_valid()
-    a.test()
+    path = "/home/sunshuo/qml/trademaster_new/experiment"
+    for seed in [12345,23451,34512,45123,51234]:
+        a = TradeMaster(path=path,data="dj30",algorithms="td3",seed=seed,train_env=TradingEnv,test_env=TestingEnv)
+        a.train_with_valid()
+        a.test()
+    a.get_report()
