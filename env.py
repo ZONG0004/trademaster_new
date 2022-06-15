@@ -76,11 +76,10 @@ class ATTradingEnv(gym.Env):
         else:
             actions = actions * HMAX_NORMALIZE
             #actions = (actions.astype(int))
-            if self.turbulence>=self.turbulence_threshold:
-                actions=np.array([-HMAX_NORMALIZE]*STOCK_DIM)
+
                 
             begin_total_asset = self.state[0]+ \
-            sum(np.array(self.state[1:(STOCK_DIM+1)])*np.array(self.state[(STOCK_DIM+1):(STOCK_DIM*2+1)]))
+            sum(np.array(self.state[0:(self.stock_dim)])*np.array(self.state[(self.stock_dim):(self.stock_dim*2)]))
             #print("begin_total_asset:{}".format(begin_total_asset))
             
             argsort_actions = np.argsort(actions)
@@ -141,11 +140,11 @@ class ATTradingEnv(gym.Env):
 
     
     def _sell_stock(self, index, action):
-        if self.state[index+STOCK_DIM] > 0:
-            self.state[0] += self.state[index]*min(abs(action),self.state[index+STOCK_DIM]) * (1- self.transaction_cost_pct)                    
+        if self.state[index+self.stock_dim] > 0:
+            self.state[0] += self.state[index]*min(abs(action),self.state[index+self.stock_dim]) * (1- self.transaction_cost_pct)                    
                 
-            self.state[index+STOCK_DIM] -= min(abs(action), self.state[index+STOCK_DIM])
-            self.cost += self.state[index]*min(abs(action),self.state[index+STOCK_DIM]) * self.transaction_cost_pct                 
+            self.state[index+self.stock_dim] -= min(abs(action), self.state[index+self.stock_dim])
+            self.cost += self.state[index]*min(abs(action),self.state[index+self.stock_dim]) * self.transaction_cost_pct                 
             self.trades+=1
         else:
             pass 
@@ -159,7 +158,7 @@ class ATTradingEnv(gym.Env):
         #update balance
         self.state[0] -= self.state[index]*min(available_amount, action)*(1+ self.transaction_cost_pct)                      
 
-        self.state[index+STOCK_DIM] += min(available_amount, action)
+        self.state[index+self.stock_dim] += min(available_amount, action)
             
         self.cost+=self.state[index+1]*min(available_amount, action) * self.transaction_cost_pct
         self.trades+=1
