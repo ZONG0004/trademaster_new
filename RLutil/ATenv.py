@@ -23,7 +23,7 @@ class ATTradingEnv(gym.Env):
             low=-1, high=1, shape=(self.action_space_shape,))
 
         self.observation_space = spaces.Box(low=-np.inf, high=np.inf,
-                                            shape=((len(self.tech_indicator_list)+1)*self.state_space_shape)+1)
+                                            shape=((len(self.tech_indicator_list)+1)*self.state_space_shape+1,))
 
         self.data = self.df.loc[self.day, :]
         # initially, the self.state's shape is stock_dim*len(tech_indicator_list)
@@ -211,7 +211,7 @@ class ATTestingEnv(gym.Env):
             low=-1, high=1, shape=(self.action_space_shape,))
 
         self.observation_space = spaces.Box(low=-np.inf, high=np.inf,
-                                            shape=((len(self.tech_indicator_list)+1)*self.state_space_shape)+1)
+                                            shape=(((len(self.tech_indicator_list)+1)*self.state_space_shape)+1,))
 
         self.data = self.df.loc[self.day, :]
         # initially, the self.state's shape is stock_dim*len(tech_indicator_list)
