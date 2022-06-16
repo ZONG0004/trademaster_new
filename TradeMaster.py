@@ -47,7 +47,7 @@ class TradeMaster(Dataconfig,agent,Analysis):
 if __name__=="__main__":
     path = "/mnt/c/Users/DELL/Desktop/code/trademaster_new/experiment"
     for seed in [12345,23451,34512,45123,51234]:
-        a = TradeMaster(path=path,data="acl18",algorithms="td3",seed=seed,train_env=TradingEnv,test_env=TestingEnv)
+        a = TradeMaster(path=path,data="dj30",algorithms="td3",seed=seed,train_env=TradingEnv,test_env=TestingEnv)
         a.train_with_valid()
         a.test()
     a.get_report()

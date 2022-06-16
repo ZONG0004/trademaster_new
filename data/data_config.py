@@ -39,7 +39,7 @@ class Dataconfig:
         return data
 
     def get_data_config(self, portion=[0.8, 0.1, 0.1],transaction_cost_pct=0.001,initial_amount=100000,
-    tech_indicator_list=["zopen","zhigh","zlow","zadjcp","zclose","zd_5","zd_10","zd_15","zd_20","zd_25","zd_30"],**kwargs):
+    tech_indicator_list=["close","zopen","zhigh","zlow","zadjcp","zclose","zd_5","zd_10","zd_15","zd_20","zd_25","zd_30"],**kwargs):
         self.dataset = self.download_data()
         self.dataset = p.generate_normalized_feature(self.dataset)
         train, valid, test = p.split(self.dataset, portion)
@@ -60,7 +60,7 @@ class Dataconfig:
 
 
 if __name__ == "__main__":
-    path = "/home/sunshuo/qml/trademaster_new"
+    path = "/mnt/c/Users/DELL/Desktop/code/trademaster_new"
     a = Dataconfig(path, "crypto")
     data = a.download_data()
     train,valid,test=a.get_data_config()

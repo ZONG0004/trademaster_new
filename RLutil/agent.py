@@ -10,7 +10,7 @@ from ray.rllib.agents.pg import pg
 from ray.rllib.agents.ppo import ppo
 from ray.rllib.agents.sac import sac
 from ray.rllib.agents.ddpg import td3
-from env import TradingEnv
+from ATenv import ATTradingEnv
 from pathlib import Path
 import sys
 sys.path.append('..')
@@ -112,7 +112,7 @@ class agent:
             state, reward, done, sharpe = test_env_instance.step(action)
         rewards = test_env_instance.save_asset_memory()
         assets = rewards["total assets"].values
-        df_return = test_env_instance.save_portfolio_return_memory()
+        df_return = test_env_instance.save_stock_return_memory()
         daily_return = df_return.daily_return.values
         df = pd.DataFrame()
         df["daily_return"] = daily_return
