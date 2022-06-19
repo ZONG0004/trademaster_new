@@ -4,8 +4,8 @@ import gym
 from gym import spaces
 import pandas as pd
 from pytest import PytestUnhandledThreadExceptionWarning
-
-HMAX_NORMALIZE = 100
+import more_itertools
+HMAX_NORMALIZE = 10
 
 class ATTradingEnv(gym.Env):
     def __init__(self, config):
@@ -23,12 +23,12 @@ class ATTradingEnv(gym.Env):
             low=-1, high=1, shape=(self.action_space_shape,))
 
         self.observation_space = spaces.Box(low=-np.inf, high=np.inf,
-                                            shape=((len(self.tech_indicator_list)+1)*self.state_space_shape+1,))
+                                            shape=(((len(self.tech_indicator_list)+1)*self.state_space_shape)+1,))
 
         self.data = self.df.loc[self.day, :]
         # initially, the self.state's shape is stock_dim*len(tech_indicator_list)
-        self.state = np.array([self.initial_amount] + [0]*self.stock_dim + [self.data[tech].values.tolist()
-                              for tech in self.tech_indicator_list])
+        self.state = np.array([self.initial_amount] + [0]*self.stock_dim + \
+                               list(more_itertools.collapse([self.data[tech].values.tolist() for tech in self.tech_indicator_list])))
 
         self.terminal = False
         self.stock_value = self.initial_amount
@@ -36,8 +36,11 @@ class ATTradingEnv(gym.Env):
         self.stock_return_memory = [0]
         self.stock_memory = [[0]*self.stock_dim]
         self.date_memory = [self.data.date.unique()[0]]
-        self.reward_memory = []
+        self.rewards_memory = []
         self.transaction_cost_memory = []
+        self.reward = 0
+        self.cost = 0
+        self.trades = 0
 
 
     def reset(self):
@@ -45,16 +48,19 @@ class ATTradingEnv(gym.Env):
         self.day = 0
         self.data = self.df.loc[self.day, :]
 
-        self.state = [[self.initial_amount] + [0]*self.stock_dim + self.data[tech].values.tolist()
-                      for tech in self.tech_indicator_list]
-        self.state = np.array(self.state)
+        self.state = np.array([self.initial_amount] + [0]*self.stock_dim + \
+                               list(more_itertools.collapse([self.data[tech].values.tolist() for tech in self.tech_indicator_list])))
+        #self.state = np.array(self.state)
         self.stock_value = self.initial_amount
         self.stock_return_memory = [0]
 
         self.terminal = False
         self.stock_memory = [[0]*self.stock_dim]
         self.date_memory = [self.data.date.unique()[0]]
+        self.reward_memory = []
         self.transaction_cost_memory = []
+        self.cost = 0
+        self.trades = 0
         return self.state
 
     def step(self, actions):
@@ -78,7 +84,7 @@ class ATTradingEnv(gym.Env):
             actions = actions * HMAX_NORMALIZE
             #actions = (actions.astype(int))
             begin_total_asset = self.state[0]+ \
-            sum(np.array(self.state[1:(STOCK_DIM+1)])*np.array(self.state[(STOCK_DIM+1):(STOCK_DIM*2+1)]))   
+            sum(np.array(self.state[1:(self.stock_dim+1)])*np.array(self.state[(self.stock_dim+1):(self.stock_dim*2+1)]))   
 
             #print("begin_total_asset:{}".format(begin_total_asset))
             
@@ -100,12 +106,12 @@ class ATTradingEnv(gym.Env):
             self.day += 1
             self.data = self.df.loc[self.day, :]
             # get the state
-            self.state =  [[self.state[0]] + \
+            self.state =  [self.state[0]] + \
                     list(self.state[1:(self.stock_dim+1)]) + \
-                      self.data[tech].values.tolist() for tech in self.tech_indicator_list]
+                      list(more_itertools.collapse([self.data[tech].values.tolist() for tech in self.tech_indicator_list]))
 
             end_total_asset = self.state[0]+ \
-            sum(np.array(self.state[1:(STOCK_DIM+1)])*np.array(self.state[(STOCK_DIM+1):(STOCK_DIM*2+1)]))
+            sum(np.array(self.state[1:(self.stock_dim+1)])*np.array(self.state[(self.stock_dim+1):(self.stock_dim*2+1)]))
             self.asset_memory.append(end_total_asset)
             self.reward = end_total_asset - begin_total_asset            
             self.rewards_memory.append(self.reward)
@@ -215,8 +221,8 @@ class ATTestingEnv(gym.Env):
 
         self.data = self.df.loc[self.day, :]
         # initially, the self.state's shape is stock_dim*len(tech_indicator_list)
-        self.state = np.array([self.initial_amount] + [0]*self.stock_dim + [self.data[tech].values.tolist()
-                              for tech in self.tech_indicator_list])
+        self.state = np.array([self.initial_amount] + [0]*self.stock_dim + \
+                               list(more_itertools.collapse([self.data[tech].values.tolist() for tech in self.tech_indicator_list])))
 
         self.terminal = False
         self.stock_value = self.initial_amount
@@ -224,8 +230,11 @@ class ATTestingEnv(gym.Env):
         self.stock_return_memory = [0]
         self.stock_memory = [[0]*self.stock_dim]
         self.date_memory = [self.data.date.unique()[0]]
-        self.reward_memory = []
+        self.rewards_memory = []
         self.transaction_cost_memory = []
+        self.reward = 0
+        self.cost = 0
+        self.trades = 0
 
 
     def reset(self):
@@ -233,16 +242,19 @@ class ATTestingEnv(gym.Env):
         self.day = 0
         self.data = self.df.loc[self.day, :]
 
-        self.state = [[self.initial_amount] + [0]*self.stock_dim + self.data[tech].values.tolist()
-                      for tech in self.tech_indicator_list]
-        self.state = np.array(self.state)
+        self.state = np.array([self.initial_amount] + [0]*self.stock_dim + \
+                               list(more_itertools.collapse([self.data[tech].values.tolist() for tech in self.tech_indicator_list])))
+        #self.state = np.array(self.state)
         self.stock_value = self.initial_amount
         self.stock_return_memory = [0]
 
         self.terminal = False
         self.stock_memory = [[0]*self.stock_dim]
         self.date_memory = [self.data.date.unique()[0]]
+        self.reward_memory = []
         self.transaction_cost_memory = []
+        self.cost = 0
+        self.trades = 0
         return self.state
 
     def step(self, actions):
@@ -260,13 +272,13 @@ class ATTestingEnv(gym.Env):
             print("the Calmar Ratio is", cr)
             print("the Sortino Ratio is", sor)
             print("=================================")
-            return self.state, self.reward, self.terminal, {}
+            return self.state, self.reward, self.terminal, sharpe_ratio
 
         else:
             actions = actions * HMAX_NORMALIZE
             #actions = (actions.astype(int))
             begin_total_asset = self.state[0]+ \
-            sum(np.array(self.state[1:(STOCK_DIM+1)])*np.array(self.state[(STOCK_DIM+1):(STOCK_DIM*2+1)]))   
+            sum(np.array(self.state[1:(self.stock_dim+1)])*np.array(self.state[(self.stock_dim+1):(self.stock_dim*2+1)]))   
 
             #print("begin_total_asset:{}".format(begin_total_asset))
             
@@ -288,12 +300,12 @@ class ATTestingEnv(gym.Env):
             self.day += 1
             self.data = self.df.loc[self.day, :]
             # get the state
-            self.state =  [[self.state[0]] + \
+            self.state =  [self.state[0]] + \
                     list(self.state[1:(self.stock_dim+1)]) + \
-                      self.data[tech].values.tolist() for tech in self.tech_indicator_list]
+                      list(more_itertools.collapse([self.data[tech].values.tolist() for tech in self.tech_indicator_list]))
 
             end_total_asset = self.state[0]+ \
-            sum(np.array(self.state[1:(STOCK_DIM+1)])*np.array(self.state[(STOCK_DIM+1):(STOCK_DIM*2+1)]))
+            sum(np.array(self.state[1:(self.stock_dim+1)])*np.array(self.state[(self.stock_dim+1):(self.stock_dim*2+1)]))
             self.asset_memory.append(end_total_asset)
             self.reward = end_total_asset - begin_total_asset            
             self.rewards_memory.append(self.reward)

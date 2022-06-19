@@ -95,6 +95,7 @@ class agent:
             self.sharpes.append(sharpe)
             checkpoint = self.trainer.save()
             self.checkpoints.append(checkpoint)
+        print(self.sharpes)
         self.loc = self.sharpes.index(max(self.sharpes))
         self.trainer.restore(self.checkpoints[self.loc])
         print(self.model_path+"/"+str(self.seed)+"/")
