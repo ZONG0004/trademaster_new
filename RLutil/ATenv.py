@@ -26,7 +26,7 @@ class ATTradingEnv(gym.Env):
                                             shape=(((len(self.tech_indicator_list)+1)*self.state_space_shape)+1,))
 
         self.data = self.df.loc[self.day, :]
-        # initially, the self.state's shape is stock_dim*len(tech_indicator_list)
+        # initially, the self.state's shape is 1+stock_dim*（len(tech_indicator_list)+1）
         self.state = np.array([self.initial_amount] + [0]*self.stock_dim + \
                                list(more_itertools.collapse([self.data[tech].values.tolist() for tech in self.tech_indicator_list])))
 
